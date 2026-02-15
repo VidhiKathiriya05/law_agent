@@ -1,12 +1,21 @@
-def generate_answer(context, question):
-    return f"""
-Based on Indian legal context:
+import requests
 
-{context}
 
-Question:
-{question}
+def generate_answer(prompt):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=300
+        )
 
-Answer:
-(This is where the AI-generated legal answer will appear.)
-"""
+        response.raise_for_status()
+
+        return response.json()["response"]
+
+    except Exception as e:
+        return f"⚠ Local LLM error: {str(e)}"

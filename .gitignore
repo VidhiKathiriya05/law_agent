@@ -1,5 +1,17 @@
-.env
-venv/
+# Python
 __pycache__/
+*.pyc
+venv/
+
+# Django
+db.sqlite3
+
+# Env
+.env
+
+# FAISS & model files
 *.index
 *.pkl
+
+# Ollama cache (just in case)
+.ollama
