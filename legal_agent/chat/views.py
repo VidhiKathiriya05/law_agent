@@ -49,28 +49,29 @@ def chat_detail(request, chat_id):
             if messages.count() == 0:
                 new_title = user_input[:35] + ("..." if len(user_input) > 35 else "")
                 chat.title = new_title
-
-            chat.save()
+                chat.save()
 
             try:
-                # 3️⃣ Retrieve Small Context
+                # 3️⃣ Retrieve Context
                 context = retrieve_context(user_input)
 
-                # 4️⃣ Build Lightweight Prompt (optimized for small CPU model)
-                prompt = f"""
+                if not context:
+                    ai_response = "Please ask a legal question related to Indian law or IPC."
+                else:
+                    # 4️⃣ Build Optimized Prompt (limit context size for small model)
+                    prompt = f"""
 Answer using ONLY the retrieved legal text below.
 
 Retrieved Text:
-{context}
+{context[:1500]}
 
 Question:
 {user_input}
 
 Give a concise structured legal answer.
 """
-
-                # 5️⃣ Generate AI Response
-                ai_response = generate_answer(prompt)
+                    # 5️⃣ Generate AI Response
+                    ai_response = generate_answer(prompt)
 
             except Exception as e:
                 ai_response = f"⚠ System Error: {str(e)}"

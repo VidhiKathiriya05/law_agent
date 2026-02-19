@@ -43,21 +43,38 @@ def load_models():
             law_documents = pickle.load(f)
 
 
-def retrieve_context(query, k=1):
-    load_models()  # Only loads once
+def retrieve_context(query, k=1, threshold=0.5):
+    load_models()
 
     query_vec = embedder.encode([query])
 
     D1, I1 = sc_index.search(np.array(query_vec), k)
     D2, I2 = law_index.search(np.array(query_vec), k)
 
-    sc_results = [sc_documents[i] for i in I1[0]]
-    law_results = [law_documents[i] for i in I2[0]]
+    sc_results = []
+    law_results = []
 
-    context = "\n\n--- Supreme Court Judgments ---\n"
-    context += "\n\n".join(sc_results)
+    # Filter Supreme Court results
+    for distance, idx in zip(D1[0], I1[0]):
+        if distance < threshold:
+            sc_results.append(sc_documents[idx])
 
-    context += "\n\n--- Statutory Provisions ---\n"
-    context += "\n\n".join(law_results)
+    # Filter Law results
+    for distance, idx in zip(D2[0], I2[0]):
+        if distance < threshold:
+            law_results.append(law_documents[idx])
+
+    if not sc_results and not law_results:
+        return ""
+
+    context = ""
+
+    if sc_results:
+        context += "\n\n--- Supreme Court Judgments ---\n"
+        context += "\n\n".join(sc_results)
+
+    if law_results:
+        context += "\n\n--- Statutory Provisions ---\n"
+        context += "\n\n".join(law_results)
 
     return context
