@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
 from .rag import retrieve_context
 from .llm import generate_answer
+from django.http import HttpResponse
 
 
 # 🔹 CHAT LIST
@@ -36,7 +37,6 @@ def chat_detail(request, chat_id):
 
     if request.method == "POST":
         user_input = request.POST.get("message", "").strip()
-
         if user_input:
             # 1️⃣ Save User Message
             ChatMessage.objects.create(
@@ -54,6 +54,10 @@ def chat_detail(request, chat_id):
             try:
                 # 3️⃣ Retrieve Context
                 context = retrieve_context(user_input)
+                print("🔎 DEBUG - User Input:", user_input)
+                print("🔎 DEBUG - Retrieved Context:", context[:100] if context else "None")
+                return HttpResponse(f"Debug Input: {user_input}")
+        
 
                 if not context:
                     ai_response = "Please ask a legal question related to Indian law or IPC."
